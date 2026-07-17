@@ -1,0 +1,14 @@
+# Go build/test cache
+.gocache/
+
+# Coverage outputs
+*.cover
+*.out
+*-cover.html
+coverage.html
+
+# Local test artifacts
+logfile
+report.csv
+report.html
+

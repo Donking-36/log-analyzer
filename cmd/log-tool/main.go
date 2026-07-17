@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Donking-36/log-analyzer/internal/logfile"
+	"github.com/Donking-36/log-analyzer/internal/parser"
 )
 
 func main() {
@@ -24,16 +25,14 @@ func main() {
 	}
 
 	for _, line := range lines {
-		parts := strings.Fields(line)
-		if len(parts) < 4 {
+		entry, err := parser.ParseLine(line)
+		if err != nil {
 			fmt.Println("跳过格式错误的日志:", line)
 			continue
 		}
 
-		logLevel := parts[2]
-
-		if *level == "" || strings.EqualFold(logLevel, *level) {
-			fmt.Println(line)
+		if *level == "" || strings.EqualFold(entry.Level, *level) {
+			fmt.Println(entry.Raw)
 		}
 	}
 }
