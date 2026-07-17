@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"strings"
 
+	"github.com/Donking-36/log-analyzer/internal/filter"
 	"github.com/Donking-36/log-analyzer/internal/logfile"
 	"github.com/Donking-36/log-analyzer/internal/parser"
 )
@@ -31,7 +31,7 @@ func main() {
 			continue
 		}
 
-		if *level == "" || strings.EqualFold(entry.Level, *level) {
+		if filter.MatchLevel(entry, *level) {
 			fmt.Println(entry.Raw)
 		}
 	}
