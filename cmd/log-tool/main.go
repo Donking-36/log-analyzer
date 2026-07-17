@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -26,7 +27,16 @@ func main() {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-		fmt.Println(line)
+
+		parts := strings.Fields(line)
+		if len(parts) < 4 {
+			fmt.Println("跳过格式错误的日志:", line)
+			continue
+		}
+		logLevel := parts[2]
+		if *level==""||strings.EqualFold(logLevel,*level){
+			fmt.Println(line)
+		}
 	}
 
 	if err := scanner.Err(); err != nil {
