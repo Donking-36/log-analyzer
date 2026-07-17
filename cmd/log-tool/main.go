@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 
 	"github.com/Donking-36/log-analyzer/internal/filter"
 	"github.com/Donking-36/log-analyzer/internal/logfile"
@@ -10,18 +11,25 @@ import (
 )
 
 func main() {
+	if err := run(); err != nil {
+		fmt.Println("错误:", err)
+		os.Exit(1)
+	}
+}
+
+func run() error {
 	filePath := flag.String("file", "", "日志文件路径")
 	level := flag.String("level", "", "日志级别，例如 INFO、WARN、ERROR")
 
 	flag.Parse()
 
-	fmt.Println("日志文件路径:", *filePath)
-	fmt.Println("日志级别:", *level)
+	if *filePath == "" {
+		return fmt.Errorf("请提供日志文件路径，例如 --file ./testdata/sample.log")
+	}
 
 	lines, err := logfile.ReadLines(*filePath)
 	if err != nil {
-		fmt.Println("读取文件失败:", err)
-		return
+		return fmt.Errorf("读取文件失败: %w", err)
 	}
 
 	for _, line := range lines {
@@ -35,4 +43,6 @@ func main() {
 			fmt.Println(entry.Raw)
 		}
 	}
+
+	return nil
 }
