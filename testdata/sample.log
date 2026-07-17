@@ -1,0 +1,5 @@
+2026-03-01 10:00:00 INFO service started
+2026-03-01 10:01:00 WARN cache miss rate high
+2026-03-01 10:02:00 ERROR database connection failed
+2026-03-01 10:03:00 INFO request completed
+2026-03-01 10:04:00 ERROR timeout while calling payment service
