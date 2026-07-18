@@ -19,3 +19,4 @@
 
 ```text
 2026-03-01 10:02:00 ERROR database connection failed
+```
