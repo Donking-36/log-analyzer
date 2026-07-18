@@ -1,0 +1,19 @@
+# Let Git detect text files and normalize repository content.
+* text=auto
+
+# Cross-platform source, documentation, CI, and test fixtures.
+*.go text eol=lf
+go.mod text eol=lf
+go.sum text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.sh text eol=lf
+testdata/*.log text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+
+# Native Windows scripts.
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
