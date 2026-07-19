@@ -27,6 +27,10 @@ func run(args []string, stdout, stderr io.Writer) error {
 
 	filePath := flags.String("file", "", "日志文件路径")
 	level := flags.String("level", "", "日志级别，例如 INFO、WARN、ERROR")
+	statMode := flags.Bool("stat", false, "启用日志统计模式")
+	startDate := flags.String("start", "", "统计开始日期，格式为 YYYY-MM-DD")
+	endDate := flags.String("end", "", "统计结束日期，格式为 YYYY-MM-DD")
+	outputPath := flags.String("output", "report.csv", "CSV 报告输出路径")
 
 	if err := flags.Parse(args); err != nil {
 		return err
@@ -34,6 +38,30 @@ func run(args []string, stdout, stderr io.Writer) error {
 
 	if *filePath == "" {
 		return fmt.Errorf("请提供日志文件路径，例如 --file ./testdata/sample.log")
+	}
+
+	statisticsOptionSet := false
+	flags.Visit(func(parsedFlag *flag.Flag) {
+		switch parsedFlag.Name {
+		case "start", "end", "output":
+			statisticsOptionSet = true
+		}
+	})
+	if !*statMode && statisticsOptionSet {
+		return fmt.Errorf("--start、--end 和 --output 只能与 --stat 一起使用")
+	}
+
+	if *statMode {
+		if *level != "" {
+			return fmt.Errorf("--stat 不能与 --level 同时使用")
+		}
+
+		return runStatistics(statisticsOptions{
+			filePath:   *filePath,
+			startDate:  *startDate,
+			endDate:    *endDate,
+			outputPath: *outputPath,
+		}, stdout, stderr)
 	}
 
 	// Process each record independently so one malformed line does not abort the command.
