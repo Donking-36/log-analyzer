@@ -1,6 +1,14 @@
 # Go build/test cache
 .gocache/
 
+# Local command build artifacts
+/log-tool
+/log-tool.exe
+
+# Python bytecode cache
+__pycache__/
+*.py[cod]
+
 # Coverage outputs
 *.cover
 *.out
