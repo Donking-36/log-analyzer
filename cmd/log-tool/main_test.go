@@ -8,6 +8,7 @@ import (
 	"testing"
 )
 
+// TestRunFiltersByLevelIgnoringCase verifies filtering and the separation of standard output from diagnostics.
 func TestRunFiltersByLevelIgnoringCase(t *testing.T) {
 	filePath := writeLogFile(t, strings.Join([]string{
 		"2026-03-01 10:00:00 INFO service started",
@@ -38,6 +39,7 @@ func TestRunFiltersByLevelIgnoringCase(t *testing.T) {
 	}
 }
 
+// TestRunWithoutLevelOutputsAllLines verifies that omitting the optional filter preserves every valid record.
 func TestRunWithoutLevelOutputsAllLines(t *testing.T) {
 	content := strings.Join([]string{
 		"2026-03-01 10:00:00 INFO service started",
@@ -62,6 +64,7 @@ func TestRunWithoutLevelOutputsAllLines(t *testing.T) {
 	}
 }
 
+// TestRunRequiresFile defines the validation error for a missing required file argument.
 func TestRunRequiresFile(t *testing.T) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
@@ -80,6 +83,7 @@ func TestRunRequiresFile(t *testing.T) {
 	}
 }
 
+// TestRunReturnsFileReadError verifies that file-system failures are returned to the caller.
 func TestRunReturnsFileReadError(t *testing.T) {
 	missingPath := filepath.Join(t.TempDir(), "missing.log")
 
@@ -96,6 +100,7 @@ func TestRunReturnsFileReadError(t *testing.T) {
 	}
 }
 
+// TestRunSkipsMalformedLines verifies that a bad record is diagnosed without hiding later valid records.
 func TestRunSkipsMalformedLines(t *testing.T) {
 	filePath := writeLogFile(t, strings.Join([]string{
 		"bad line",
@@ -121,6 +126,7 @@ func TestRunSkipsMalformedLines(t *testing.T) {
 	}
 }
 
+// writeLogFile creates an isolated log fixture and returns its path to the command test.
 func writeLogFile(t *testing.T, content string) string {
 	t.Helper()
 

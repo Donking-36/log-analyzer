@@ -2,6 +2,7 @@ package parser
 
 import "testing"
 
+// TestParseLineSuccess verifies field extraction without changing the source record.
 func TestParseLineSuccess(t *testing.T) {
 	line := "2026-03-01 10:02:00 ERROR database connection failed"
 
@@ -23,6 +24,7 @@ func TestParseLineSuccess(t *testing.T) {
 	}
 }
 
+// TestParseLineInvalidFormat rejects records that do not contain all required fields.
 func TestParseLineInvalidFormat(t *testing.T) {
 	_, err := ParseLine("bad line")
 	if err == nil {
