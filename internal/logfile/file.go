@@ -6,7 +6,6 @@ import (
 	"os"
 )
 
-
 // ScanLines reads filePath sequentially and calls handle for each successfully scanned line.
 // It uses bufio.Scanner's default maximum token size and returns the first open,
 // scan, or handler error.

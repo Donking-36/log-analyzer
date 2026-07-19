@@ -8,7 +8,6 @@ import (
 	"testing"
 )
 
-
 // TestScanLinesProcessesLinesInOrder verifies ordered delivery, including a final line without a trailing newline.
 func TestScanLinesProcessesLinesInOrder(t *testing.T) {
 	filePath := filepath.Join(t.TempDir(), "sample.log")
