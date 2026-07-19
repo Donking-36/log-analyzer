@@ -16,7 +16,7 @@ type Counter struct {
 	total        int
 }
 
-// Summary is an immutable snapshot of the current aggregate values.
+// Summary is a detached snapshot of the current aggregate values.
 type Summary struct {
 	Counts map[string]int
 	Total  int
