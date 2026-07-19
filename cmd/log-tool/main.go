@@ -20,8 +20,13 @@ func main() {
 	}
 }
 
-// run executes one command invocation with injected output streams so its observable behavior can be tested without starting a subprocess.
+// run executes one command invocation with production dependencies.
 func run(args []string, stdout, stderr io.Writer) error {
+	return runWithDependencies(args, stdout, stderr, productionCommandDependencies())
+}
+
+// runWithDependencies injects external process and browser boundaries for deterministic tests.
+func runWithDependencies(args []string, stdout, stderr io.Writer, dependencies commandDependencies) error {
 	flags := flag.NewFlagSet("log-tool", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 
@@ -31,22 +36,39 @@ func run(args []string, stdout, stderr io.Writer) error {
 	startDate := flags.String("start", "", "统计开始日期，格式为 YYYY-MM-DD")
 	endDate := flags.String("end", "", "统计结束日期，格式为 YYYY-MM-DD")
 	outputPath := flags.String("output", "report.csv", "CSV 报告输出路径")
+	visualMode := flags.Bool("visual", false, "启用统计结果可视化模式")
+	csvPath := flags.String("csv", "", "CSV 统计报表路径")
 
 	if err := flags.Parse(args); err != nil {
 		return err
 	}
 
+	setFlags := make(map[string]bool)
+	flags.Visit(func(parsedFlag *flag.Flag) {
+		setFlags[parsedFlag.Name] = true
+	})
+
+	if *visualMode {
+		for _, conflictingFlag := range []string{"file", "level", "stat", "start", "end", "output"} {
+			if setFlags[conflictingFlag] {
+				return fmt.Errorf("--visual 不能与 --%s 同时使用", conflictingFlag)
+			}
+		}
+		if *csvPath == "" {
+			return fmt.Errorf("请提供 CSV 统计报表路径，例如 --csv ./report.csv")
+		}
+
+		return runVisualization(visualizationOptions{csvPath: *csvPath}, stdout, dependencies)
+	}
+
+	if setFlags["csv"] {
+		return fmt.Errorf("--csv 只能与 --visual 一起使用")
+	}
 	if *filePath == "" {
 		return fmt.Errorf("请提供日志文件路径，例如 --file ./testdata/sample.log")
 	}
 
-	statisticsOptionSet := false
-	flags.Visit(func(parsedFlag *flag.Flag) {
-		switch parsedFlag.Name {
-		case "start", "end", "output":
-			statisticsOptionSet = true
-		}
-	})
+	statisticsOptionSet := setFlags["start"] || setFlags["end"] || setFlags["output"]
 	if !*statMode && statisticsOptionSet {
 		return fmt.Errorf("--start、--end 和 --output 只能与 --stat 一起使用")
 	}
