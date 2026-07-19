@@ -6,6 +6,7 @@ import (
 	"github.com/Donking-36/log-analyzer/internal/parser"
 )
 
+// TestMatchLevelSameLevel verifies an exact severity match.
 func TestMatchLevelSameLevel(t *testing.T) {
 	entry := parser.LogEntry{Level: "ERROR"}
 
@@ -14,6 +15,7 @@ func TestMatchLevelSameLevel(t *testing.T) {
 	}
 }
 
+// TestMatchLevelIgnoreCase preserves the command's case-insensitive filtering contract.
 func TestMatchLevelIgnoreCase(t *testing.T) {
 	entry := parser.LogEntry{Level: "ERROR"}
 
@@ -22,6 +24,7 @@ func TestMatchLevelIgnoreCase(t *testing.T) {
 	}
 }
 
+// TestMatchLevelEmptyLevel verifies that an omitted filter accepts every entry.
 func TestMatchLevelEmptyLevel(t *testing.T) {
 	entry := parser.LogEntry{Level: "INFO"}
 
@@ -30,6 +33,7 @@ func TestMatchLevelEmptyLevel(t *testing.T) {
 	}
 }
 
+// TestMatchLevelDifferentLevel rejects entries with another severity.
 func TestMatchLevelDifferentLevel(t *testing.T) {
 	entry := parser.LogEntry{Level: "INFO"}
 
