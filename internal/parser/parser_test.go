@@ -1,6 +1,9 @@
 package parser
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 // TestParseLineSuccess verifies field extraction without changing the source record.
 func TestParseLineSuccess(t *testing.T) {
@@ -9,6 +12,11 @@ func TestParseLineSuccess(t *testing.T) {
 	entry, err := ParseLine(line)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	wantTimestamp := time.Date(2026, time.March, 1, 10, 2, 0, 0, time.UTC)
+	if !entry.Timestamp.Equal(wantTimestamp) {
+		t.Fatalf("expected timestamp %s, got %s", wantTimestamp, entry.Timestamp)
 	}
 
 	if entry.Level != "ERROR" {
@@ -29,5 +37,13 @@ func TestParseLineInvalidFormat(t *testing.T) {
 	_, err := ParseLine("bad line")
 	if err == nil {
 		t.Fatal("expected error, got nil")
+	}
+}
+
+// TestParseLineInvalidTimestamp rejects calendar dates and times that cannot be parsed.
+func TestParseLineInvalidTimestamp(t *testing.T) {
+	_, err := ParseLine("2026-02-30 10:02:00 ERROR database connection failed")
+	if err == nil {
+		t.Fatal("expected invalid timestamp to return an error")
 	}
 }
