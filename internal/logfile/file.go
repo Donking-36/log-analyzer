@@ -1,3 +1,4 @@
+// Package logfile provides line-oriented access to local log files.
 package logfile
 
 import (
@@ -5,24 +6,22 @@ import (
 	"os"
 )
 
-func ReadLines(filePath string) ([]string, error) {
+
+// ScanLines reads filePath sequentially and calls handle for each successfully scanned line.
+// It uses bufio.Scanner's default maximum token size and returns the first open,
+// scan, or handler error.
+func ScanLines(filePath string, handle func(string) error) error {
 	file, err := os.Open(filePath)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer file.Close()
 
-	var lines []string
-
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		line := scanner.Text()
-		lines = append(lines, line)
+		if err := handle(scanner.Text()); err != nil {
+			return err
+		}
 	}
-
-	if err := scanner.Err(); err != nil {
-		return nil, err
-	}
-
-	return lines, nil
+	return scanner.Err()
 }
