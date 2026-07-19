@@ -70,3 +70,33 @@ func TestNewCounterRejectsReversedDateRange(t *testing.T) {
 		t.Fatal("expected nil counter when date range is invalid")
 	}
 }
+
+// TestCounterMergesLevelsIgnoringCase verifies canonical uppercase grouping.
+func TestCounterMergesLevelsIgnoringCase(t *testing.T) {
+	date := time.Date(2026, time.March, 1, 0, 0, 0, 0, time.UTC)
+
+	counter, err := NewCounter(date, date)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, level := range []string{"error", "ERROR", "Error"} {
+		counter.Add(parser.LogEntry{
+			Timestamp: date,
+			Level:     level,
+		})
+	}
+
+	got := counter.Summary()
+	wantCounts := map[string]int{
+		"ERROR": 3,
+	}
+
+	if got.Total != 3 {
+		t.Fatalf("expected total 3, got %d", got.Total)
+	}
+
+	if !maps.Equal(got.Counts, wantCounts) {
+		t.Fatalf("expected counts %v, got %v", wantCounts, got.Counts)
+	}
+}

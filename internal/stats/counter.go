@@ -3,6 +3,7 @@ package stats
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/Donking-36/log-analyzer/internal/parser"
@@ -45,7 +46,8 @@ func (c *Counter) Add(entry parser.LogEntry) {
 		return
 	}
 
-	c.counts[entry.Level]++
+	level := strings.ToUpper(entry.Level)
+	c.counts[level]++
 	c.total++
 }
 
