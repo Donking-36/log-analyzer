@@ -1,3 +1,4 @@
+// Package parser converts raw log lines into structured entries.
 package parser
 
 import (
@@ -5,12 +6,19 @@ import (
 	"strings"
 )
 
+// LogEntry contains the parsed level and message while retaining the source record.
 type LogEntry struct {
-	Level   string
+	// Level is the record's severity token.
+	Level string
+	// Message contains the fields after the level, joined with single spaces.
 	Message string
-	Raw     string
+	// Raw preserves the original, unmodified log line.
+	Raw string
 }
 
+// ParseLine expects at least four whitespace-separated fields.
+// It uses the third field as Level, joins the remaining fields as Message,
+// and retains the original input in Raw; the first two fields are not validated.
 func ParseLine(line string) (LogEntry, error) {
 	parts := strings.Fields(line)
 	if len(parts) < 4 {
