@@ -9,7 +9,7 @@ import (
 
 const timestampLayout = "2006-01-02 15:04:05"
 
-// LogEntry contains the parsed level and message while retaining the source record.
+// LogEntry contains the parsed timestamp, level, and message while retaining the source record.
 type LogEntry struct {
 	// Timestamp is the timezone-free log date and time represented in UTC.
 	Timestamp time.Time
@@ -21,9 +21,9 @@ type LogEntry struct {
 	Raw string
 }
 
-// ParseLine expects at least four whitespace-separated fields.
-// It uses the third field as Level, joins the remaining fields as Message,
-// and retains the original input in Raw; the first two fields are not validated.
+// ParseLine expects a record in the form "<date> <time> <level> <message>".
+// It parses the first two fields as Timestamp, uses the third as Level,
+// joins the remaining fields as Message, and preserves the original input in Raw.
 func ParseLine(line string) (LogEntry, error) {
 	parts := strings.Fields(line)
 	if len(parts) < 4 {
