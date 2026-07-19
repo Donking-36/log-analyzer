@@ -248,8 +248,8 @@ def main(argv=None):
     try:
         html_text = build_html(png_bytes, empty=not rows)
         write_html_atomically(args.output, html_text)
-    except OSError:
-        print("VISUALIZE_WRITE_FAILED", file=sys.stderr)
+    except OSError as exc:
+        print(f"VISUALIZE_WRITE_FAILED: {exc}", file=sys.stderr)
         return EXIT_WRITE_FAILED
     except Exception:
         print("VISUALIZE_RENDER_FAILED", file=sys.stderr)

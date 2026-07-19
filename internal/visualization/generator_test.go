@@ -81,6 +81,23 @@ func TestGenerateFallsBackToNextPythonCandidate(t *testing.T) {
 	}
 }
 
+func TestGenerateMapsMissingPythonExecutables(t *testing.T) {
+	csvPath := writeCSVFixture(t, "level,count,percentage\n")
+	calls := 0
+	runner := func(_ context.Context, _ string, _ ...string) ([]byte, error) {
+		calls++
+		return nil, os.ErrNotExist
+	}
+
+	err := Generate(context.Background(), csvPath, HTMLPath(csvPath), runner)
+	if !errors.Is(err, ErrMissingPythonDependency) {
+		t.Fatalf("expected ErrMissingPythonDependency, got %v", err)
+	}
+	if calls != len(pythonCandidates(runtime.GOOS)) {
+		t.Fatalf("expected every Python candidate to be tried, got %d calls", calls)
+	}
+}
+
 func TestGenerateMapsPythonExitCodes(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -94,7 +111,7 @@ func TestGenerateMapsPythonExitCodes(t *testing.T) {
 		{name: "HTML write failure", exitCode: 5, wantText: "写入 HTML 报告失败", wantCalls: 1},
 		{name: "internal renderer failure", exitCode: 6, wantText: "生成可视化报告失败", wantCalls: 1},
 		{name: "argument failure", exitCode: 2, wantText: "生成可视化报告失败", wantCalls: 1},
-		{name: "launcher failure", exitCode: 9, wantTarget: ErrMissingPythonDependency, wantCalls: len(pythonCandidates(runtime.GOOS))},
+		{name: "unexpected exit", exitCode: 9, wantText: "Python 可视化脚本异常退出（退出码 9）", wantCalls: len(pythonCandidates(runtime.GOOS))},
 	}
 
 	for _, tt := range tests {
@@ -106,12 +123,20 @@ func TestGenerateMapsPythonExitCodes(t *testing.T) {
 				return []byte("renderer detail"), fakeExitError(tt.exitCode)
 			}
 
-			err := Generate(context.Background(), csvPath, HTMLPath(csvPath), runner)
+			htmlPath := HTMLPath(csvPath)
+			err := Generate(context.Background(), csvPath, htmlPath, runner)
 			if tt.wantTarget != nil && !errors.Is(err, tt.wantTarget) {
 				t.Fatalf("expected error %v, got %v", tt.wantTarget, err)
 			}
 			if tt.wantText != "" && !strings.Contains(err.Error(), tt.wantText) {
 				t.Fatalf("expected error containing %q, got %v", tt.wantText, err)
+			}
+			if tt.exitCode == 5 &&
+				(!strings.Contains(err.Error(), htmlPath) || !strings.Contains(err.Error(), "renderer detail")) {
+				t.Fatalf("expected HTML path and underlying write detail, got %v", err)
+			}
+			if tt.exitCode == 9 && !strings.Contains(err.Error(), "renderer detail") {
+				t.Fatalf("expected unexpected-exit diagnostic detail, got %v", err)
 			}
 			if calls != tt.wantCalls {
 				t.Fatalf("expected %d calls, got %d", tt.wantCalls, calls)

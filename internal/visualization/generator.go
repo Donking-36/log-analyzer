@@ -64,6 +64,10 @@ func Generate(ctx context.Context, csvPath, htmlPath string, run CommandRunner) 
 		return fmt.Errorf("准备可视化脚本失败: %w", err)
 	}
 
+	var unexpectedExitSeen bool
+	var unexpectedExitCode int
+	var unexpectedOutput []byte
+
 	for _, candidate := range pythonCandidates(runtime.GOOS) {
 		args := append([]string{}, candidate.prefixArgs...)
 		args = append(args,
@@ -93,14 +97,24 @@ func Generate(ctx context.Context, csvPath, htmlPath string, run CommandRunner) 
 		case 4:
 			continue
 		case 5:
-			return fmt.Errorf("写入 HTML 报告失败 %q%s", absoluteHTMLPath, commandDetails(output))
+			return fmt.Errorf("写入 HTML 报告失败 %s%s", absoluteHTMLPath, commandDetails(output))
 		case 2, 6:
 			return fmt.Errorf("生成可视化报告失败%s", commandDetails(output))
 		default:
+			unexpectedExitSeen = true
+			unexpectedExitCode = exitCode
+			unexpectedOutput = append([]byte(nil), output...)
 			continue
 		}
 	}
 
+	if unexpectedExitSeen {
+		return fmt.Errorf(
+			"Python 可视化脚本异常退出（退出码 %d）%s",
+			unexpectedExitCode,
+			commandDetails(unexpectedOutput),
+		)
+	}
 	return ErrMissingPythonDependency
 }
 
