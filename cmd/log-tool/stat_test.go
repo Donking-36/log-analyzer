@@ -54,10 +54,11 @@ func TestRunStatisticsWritesDefaultCSVReport(t *testing.T) {
 		t.Fatalf("expected empty stdout, got %q", got)
 	}
 
-	wantStderr := "跳过格式错误的日志: bad line\n"
-	if got := stderr.String(); got != wantStderr {
-		t.Fatalf("expected stderr %q, got %q", wantStderr, got)
-	}
+	assertWarningLog(
+		t,
+		stderr.String(),
+		"跳过格式错误的日志: bad line",
+	)
 }
 
 // TestRunStatisticsValidatesArguments defines the errors for invalid statistics options.
@@ -183,8 +184,13 @@ func TestRunStatisticsReturnsInputReadError(t *testing.T) {
 		"--end", "2026-03-02",
 		"--output", outputPath,
 	}, &stdout, &stderr)
-	if err == nil || !strings.Contains(err.Error(), "读取文件失败") {
-		t.Fatalf("expected file read error, got %v", err)
+	if err == nil {
+		t.Fatal("expected missing file to return an error")
+	}
+
+	const wantErr = "文件路径无效，请检查路径后重试"
+	if got := err.Error(); got != wantErr {
+		t.Fatalf("expected error %q, got %q", wantErr, got)
 	}
 	if _, statErr := os.Stat(outputPath); !os.IsNotExist(statErr) {
 		t.Fatalf("expected no report file, got stat error %v", statErr)
