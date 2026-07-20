@@ -95,8 +95,9 @@ func TestRunReturnsFileReadError(t *testing.T) {
 		t.Fatal("expected missing file to return an error")
 	}
 
-	if !strings.Contains(err.Error(), "读取文件失败") {
-		t.Fatalf("expected file read error, got %q", err)
+	const wantErr = "文件路径无效，请检查路径后重试"
+	if got := err.Error(); got != wantErr {
+		t.Fatalf("expected error %q, got %q", wantErr, got)
 	}
 }
 

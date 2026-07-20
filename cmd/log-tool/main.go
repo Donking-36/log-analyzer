@@ -101,7 +101,7 @@ func runWithDependencies(args []string, stdout, stderr io.Writer, dependencies c
 		return nil
 	})
 	if scanErr != nil {
-		return fmt.Errorf("读取文件失败: %w", scanErr)
+		return logFileReadError(scanErr)
 	}
 	return nil
 }

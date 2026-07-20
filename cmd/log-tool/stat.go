@@ -48,7 +48,7 @@ func runStatistics(options statisticsOptions, stdout, stderr io.Writer) error {
 		return nil
 	})
 	if scanErr != nil {
-		return fmt.Errorf("读取文件失败: %w", scanErr)
+		return logFileReadError(scanErr)
 	}
 
 	summary := counter.Summary()
