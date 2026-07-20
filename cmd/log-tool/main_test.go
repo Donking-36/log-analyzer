@@ -121,10 +121,11 @@ func TestRunSkipsMalformedLines(t *testing.T) {
 		t.Fatalf("expected stdout %q, got %q", wantStdout, got)
 	}
 
-	wantStderr := "跳过格式错误的日志: bad line\n"
-	if got := stderr.String(); got != wantStderr {
-		t.Fatalf("expected stderr %q, got %q", wantStderr, got)
-	}
+	assertWarningLog(
+		t,
+		stderr.String(),
+		"跳过格式错误的日志: bad line",
+	)
 }
 
 // writeLogFile creates an isolated log fixture and returns its path to the command test.
@@ -137,4 +138,47 @@ func writeLogFile(t *testing.T, content string) string {
 	}
 
 	return filePath
+}
+
+// assertWarningLog verifies the terminal diagnostic and persisted warning file.
+func assertWarningLog(t *testing.T, stderr, wantWarning string) {
+	t.Helper()
+
+	const pathPrefix = "告警日志已记录到: "
+	wantStderrPrefix := wantWarning + "\n" + pathPrefix
+
+	if !strings.HasPrefix(stderr, wantStderrPrefix) {
+		t.Fatalf(
+			"expected stderr to start with %q, got %q",
+			wantStderrPrefix,
+			stderr,
+		)
+	}
+
+	warningPath := strings.TrimSpace(
+		strings.TrimPrefix(stderr, wantStderrPrefix),
+	)
+	if warningPath == "" || strings.Contains(warningPath, "\n") {
+		t.Fatalf("expected one warning log path, got %q", warningPath)
+	}
+
+	t.Cleanup(func() {
+		if err := os.Remove(warningPath); err != nil && !os.IsNotExist(err) {
+			t.Errorf("remove warning log: %v", err)
+		}
+	})
+
+	content, err := os.ReadFile(warningPath)
+	if err != nil {
+		t.Fatalf("read warning log %q: %v", warningPath, err)
+	}
+
+	wantContent := wantWarning + "\n"
+	if got := string(content); got != wantContent {
+		t.Fatalf(
+			"expected warning log content %q, got %q",
+			wantContent,
+			got,
+		)
+	}
 }

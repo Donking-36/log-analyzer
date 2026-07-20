@@ -54,10 +54,11 @@ func TestRunStatisticsWritesDefaultCSVReport(t *testing.T) {
 		t.Fatalf("expected empty stdout, got %q", got)
 	}
 
-	wantStderr := "跳过格式错误的日志: bad line\n"
-	if got := stderr.String(); got != wantStderr {
-		t.Fatalf("expected stderr %q, got %q", wantStderr, got)
-	}
+	assertWarningLog(
+		t,
+		stderr.String(),
+		"跳过格式错误的日志: bad line",
+	)
 }
 
 // TestRunStatisticsValidatesArguments defines the errors for invalid statistics options.

@@ -87,10 +87,11 @@ func runWithDependencies(args []string, stdout, stderr io.Writer, dependencies c
 	}
 
 	// Process each record independently so one malformed line does not abort the command.
+	warnings := &warningLog{}
 	scanErr := logfile.ScanLines(*filePath, func(line string) error {
 		entry, err := parser.ParseLine(line)
 		if err != nil {
-			fmt.Fprintln(stderr, "跳过格式错误的日志:", line)
+			reportMalformedLine(stderr, warnings, line)
 			return nil
 		}
 
@@ -100,6 +101,8 @@ func runWithDependencies(args []string, stdout, stderr io.Writer, dependencies c
 
 		return nil
 	})
+	finalizeWarningLog(stderr, warnings)
+
 	if scanErr != nil {
 		return logFileReadError(scanErr)
 	}
