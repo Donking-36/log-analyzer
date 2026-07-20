@@ -126,10 +126,13 @@ Windows 使用系统文件关联打开 HTML，macOS 使用 `open`，Linux 使用
 
 ```powershell
 gofmt -l .
-go test ./...
+go test ./... -count=1 -coverprofile=coverage.out
+go tool cover -func=coverage.out
 py -3 -m unittest internal/visualization/visualize_report_test.py
 go vet ./...
 go build ./cmd/log-tool
 ```
+
+CI 会检查 Go 测试总语句覆盖率，低于 85% 时检查失败。`coverage.out` 已被 Git 忽略。
 
 macOS 或 Linux 请将最后一组命令中的 `py -3` 改为 `python3`。

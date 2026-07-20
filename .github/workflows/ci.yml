@@ -44,8 +44,26 @@ jobs:
             exit 1
           fi
 
-      - name: Run tests
-        run: go test ./...
+      - name: Run Go tests with coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          go test ./... -count=1 -covermode=atomic -coverprofile=coverage.out
+
+          coverage="$(
+            go tool cover -func=coverage.out |
+              awk '$1 == "total:" { gsub(/%/, "", $3); print $3 }'
+          )"
+          if [[ -z "$coverage" ]]; then
+            echo "Unable to determine total Go test coverage."
+            exit 1
+          fi
+
+          echo "Total Go test coverage: ${coverage}%"
+          awk -v coverage="$coverage" 'BEGIN { exit !(coverage + 0 >= 85) }' || {
+            echo "Go test coverage ${coverage}% is below the required 85%."
+            exit 1
+          }
 
       - name: Run Python renderer tests
         run: python -m unittest internal/visualization/visualize_report_test.py
