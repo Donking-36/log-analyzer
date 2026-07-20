@@ -37,18 +37,21 @@ func runStatistics(options statisticsOptions, stdout, stderr io.Writer) error {
 		return fmt.Errorf("CSV 输出路径不能与日志文件路径相同")
 	}
 
+	warnings := &warningLog{}
 	scanErr := logfile.ScanLines(options.filePath, func(line string) error {
 		entry, err := parser.ParseLine(line)
 		if err != nil {
-			fmt.Fprintln(stderr, "跳过格式错误的日志:", line)
+			reportMalformedLine(stderr, warnings, line)
 			return nil
 		}
 
 		counter.Add(entry)
 		return nil
 	})
+	finalizeWarningLog(stderr, warnings)
+
 	if scanErr != nil {
-		return fmt.Errorf("读取文件失败: %w", scanErr)
+		return logFileReadError(scanErr)
 	}
 
 	summary := counter.Summary()
